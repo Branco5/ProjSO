@@ -9,7 +9,8 @@ public class Algorithm {
     //public List<Path> paths;
     private int[][] matrix;
     private int population;
-    private int bestPath;
+    private int bestDistance;
+    private Path bestPath;
 
 
     public Algorithm(String file, int population){
@@ -17,7 +18,7 @@ public class Algorithm {
         //paths = new ArrayList<>();
         this.population = population;
         matrix = convertArray((getMatrixFromFile(file)));
-        bestPath = 999999999;
+        bestDistance = 999999999;
         //bestPath = setTop2Paths(paths.get(0));
     }
 
@@ -25,8 +26,7 @@ public class Algorithm {
         initPaths();
     }
 
-    public synchronized void runAl(List<Path> paths, String threadName) throws InterruptedException {
-
+    public synchronized void runAlgorithm(List<Path> paths, Base.Worker thread, Base base) throws InterruptedException {
         int parent1[] = paths.get(0).getPath();
         int parent2[] = paths.get(1).getPath();
 
@@ -41,10 +41,22 @@ public class Algorithm {
 
         paths = setTop2Paths(paths);
 
-        if(paths.get(0).getDistance() < bestPath){
-            this.bestPath = paths.get(0).getDistance();
-            System.out.println("Best path: " + paths.get(0) + " with distance: "+ bestPath + " found by "+ threadName);
+        if(paths.get(0).getDistance() < bestDistance){
+            thread.setTime(System.currentTimeMillis() - base.getStartTime());
+            setBestPath(paths);
+            System.out.println("Best path: " + paths.get(0) +  " found by "+ thread.getName() + " in "+thread.getTime()+" milliseconds");
         }
+        //System.out.println();
+    }
+
+    synchronized void setBestPath(List<Path> paths) {
+        this.bestDistance = paths.get(0).getDistance();
+        this.bestPath = paths.get(0);
+        //notifyAll();
+    }
+
+    public Path getBestPath(){
+        return bestPath;
     }
 /*
     public void runTest(){

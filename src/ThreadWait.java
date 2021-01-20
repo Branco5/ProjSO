@@ -13,7 +13,7 @@ public class ThreadWait extends Thread {
             try {
                 sleep(time);
                 base.stopWorkers();
-                System.out.println("Program ended");
+                System.out.println("\nProgram ended");
                 this.interrupt();
             } catch (InterruptedException e) {
                 e.printStackTrace();
