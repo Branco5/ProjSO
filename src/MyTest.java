@@ -1,11 +1,3 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.*;
-import java.lang.System;
-
 public class MyTest {
 
     public static void main(String[] args) {
@@ -17,8 +9,8 @@ public class MyTest {
                 System.out.print(m[i][j]+", ");
             }
         }*/
-        Algorithm al = new Algorithm("ex5.txt", 8);
-        al.run();
+        Algorithm al = new Algorithm("att48.txt", 4);
+       // al.runTest();
         //al.algorithm(5, "ex5.txt");
     }
 }
