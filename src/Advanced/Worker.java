@@ -77,14 +77,6 @@ public class Worker extends Thread {
                     e.printStackTrace();
                 }
             }
-/*
-            try {
-                this.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
-
         }
-
     }
 }

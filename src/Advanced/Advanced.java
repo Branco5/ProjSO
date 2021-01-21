@@ -4,6 +4,7 @@ public class Advanced {
     private Worker[] workers;
     private Algorithm aj;
     private long startTime;
+    private long start;
     private double percent;
     private long duration;
     static boolean doWork = true; //When false merge populations
@@ -14,6 +15,7 @@ public class Advanced {
         this.aj = new Algorithm(file, population);
         this.percent = percent;
         this.duration = duration;
+        this.startTime = System.currentTimeMillis();
 
         for (int i = 0; i<workers.length; i++) {
             String name = "thread-"+i;
@@ -36,7 +38,7 @@ public class Advanced {
     }
 
     public void startWorkers(){
-        startTime = System.currentTimeMillis();
+        //startTime = System.currentTimeMillis();
         for(int i = 0; i< workers.length; i++){
             workers[i].start();
         }
@@ -86,13 +88,14 @@ public class Advanced {
 
     public static void main(String[] args) throws InterruptedException {
 
-        Advanced adv = new Advanced(4, 0.49, "att48.txt", 50, 10000);
+        Advanced adv = new Advanced(4, 0.3, "att48.txt", 50, 10000);
         ThreadMerge tm = new ThreadMerge(adv);
         ThreadWait tw = new ThreadWait(adv, tm);
 
+        adv.startWorkers();
         tw.start();
         tm.start();
-        adv.startWorkers();
+
 /*
         long t= System.currentTimeMillis();
         long end = t+3000;

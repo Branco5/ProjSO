@@ -4,23 +4,30 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static java.util.Arrays.copyOfRange;
 
 public class ThreadMerge extends Thread {
     private Advanced advanced;
     private long period;
+    private boolean ceased;
 
     public ThreadMerge(Advanced advanced){
         this.period = (long)advanced.getPeriod();
         this.advanced = advanced;
+        this.ceased=false;
+    }
+
+    public void cease(){
+        this.ceased = true;
     }
 
     @Override
     public void run() {
-        while (!Thread.interrupted()) {
+        long time = advanced.getStartTime()+advanced.getDuration()-period*2;
+        while (System.currentTimeMillis() <= time) {
             try {
                 sleep(period);
                 Advanced.doWork=false;
+                sleep(300);
                 System.out.println("MERGING POPULATIONS|RATE="+period);
                 List<Path> merged = new ArrayList<>();
                 for(Worker w : advanced.getWorkers()){

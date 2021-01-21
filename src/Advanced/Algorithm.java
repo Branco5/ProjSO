@@ -41,7 +41,7 @@ public class Algorithm {
         if(paths.get(0).getDistance() < bestDistance) {
             thread.setTime(System.currentTimeMillis() - advanced.getStartTime());
             bestDistance = paths.get(0).getDistance();
-            System.out.println("Best path: " + paths.get(0) + " found by " + thread.getName() + " in " + thread.getTime() + " milliseconds");
+            System.out.println("Best path: " + bestDistance + " found in " + thread.getTime() + " milliseconds");
         }
 
    /*     if(paths.get(0).getDistance() < bestDistance) {
