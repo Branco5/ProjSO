@@ -1,32 +1,28 @@
+package Advanced;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.lang.System;
 
 public class Algorithm {
     private Random rand;
-    //public List<Path> paths;
     private int[][] matrix;
-    private int population;
+    private int popSize;
     private int bestDistance;
     private Path bestPath;
+    private HashMap<Worker, Path> bestPathByWorker;
 
-
-    public Algorithm(String file, int population){
+    public Algorithm(String file, int popSize){
         rand = new Random();
-        //paths = new ArrayList<>();
-        this.population = population;
-        matrix = convertArray((getMatrixFromFile(file)));
+        this.popSize = popSize;
+        matrix = convertArray(getMatrixFromFile(file));
         bestDistance = 999999999;
-        //bestPath = setTop2Paths(paths.get(0));
+        bestPathByWorker = new HashMap<>();
     }
 
-    public void init(){
-        initPaths();
-    }
+    public synchronized void runAlgorithm(List<Path> paths, Worker thread, Advanced advanced) throws InterruptedException {
 
-    public synchronized void runAlgorithm(List<Path> paths, Base.Worker thread, Base base) throws InterruptedException {
         int parent1[] = paths.get(0).getPath();
         int parent2[] = paths.get(1).getPath();
 
@@ -38,75 +34,58 @@ public class Algorithm {
         swap(child2);
         paths.add(new Path(child1, matrix));
         paths.add(new Path(child2, matrix));
+        thread.updatePopSize();
 
-        paths = setTop2Paths(paths);
-
-        if(paths.get(0).getDistance() < bestDistance){
-            thread.setTime(System.currentTimeMillis() - base.getStartTime());
-            setBestPath(paths);
-            System.out.println("Best path: " + paths.get(0) +  " found by "+ thread.getName() + " in "+thread.getTime()+" milliseconds");
+        setTop2Paths(paths);
+        thread.updatePopSize();
+        if(paths.get(0).getDistance() < bestDistance) {
+            thread.setTime(System.currentTimeMillis() - advanced.getStartTime());
+            bestDistance = paths.get(0).getDistance();
+            System.out.println("Best path: " + paths.get(0) + " found by " + thread.getName() + " in " + thread.getTime() + " milliseconds");
         }
-        //System.out.println();
-    }
 
-    synchronized void setBestPath(List<Path> paths) {
-        this.bestDistance = paths.get(0).getDistance();
-        this.bestPath = paths.get(0);
-        //notifyAll();
+   /*     if(paths.get(0).getDistance() < bestDistance) {
+            thread.setTime(System.currentTimeMillis() - advanced.getStartTime());
+            setBestPathByWorker(paths, thread);
+            System.out.println("Best path: " + paths.get(0) + " found by " + thread.getName() + " in " + thread.getTime() + " milliseconds");
+        }*/
+    }
+    synchronized void setBestPath() {
+        List<Path> bestPaths = new ArrayList<>(getBestPathByWorker().values());
+        setTop2Paths(bestPaths);
+        this.bestPath = bestPaths.get(0);
     }
 
     public Path getBestPath(){
         return bestPath;
     }
-/*
-    public void runTest(){
-        //int[][] m = convertArray((getMatrixFromFile("ex5.txt")));
-        System.out.println("INITIAL PATHS");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
 
-        setTop2Paths();
-        System.out.println("TOP 2");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
+    public void putWorkerPath(Worker w){
+        bestPathByWorker.put(w, w.getBestPath());
+    }
 
-        int parent1[] = paths.get(0).getPath();
-        int parent2[] = paths.get(1).getPath();
+    public HashMap<Worker, Path> getBestPathByWorker(){
+        return bestPathByWorker;
+    }
 
-        int child1[] = new int[matrix.length];
-        int child2[] = new int[matrix.length];
-
-        pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
-        swap(child1);
-        swap(child2);
-        paths.add(new Path(child1, matrix));
-        paths.add(new Path(child2, matrix));
-
-        System.out.println("TOP 2 + CHILDREN");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-        setTop2Paths();
-        System.out.println("FINAL");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-    }*/
 
     public List<Path> initPaths(){
 
         List<Path> ps = new ArrayList<>();
 
-        for(int i = 0; i< population; i++){
+        for(int i = 0; i< popSize; i++){
             Path path = initialPath();
             path = randomPath(path);
             path.setDistance(matrix);
             ps.add(i,path);
         }
+
+        setTop2Paths(ps);
+
         return ps;
     }
 
-    public List<Path> setTop2Paths(List<Path> paths){
+    public static void setTop2Paths(List<Path> paths){
 
         //paths.forEach(path-> System.out.println(path.toString()));
 
@@ -117,7 +96,7 @@ public class Algorithm {
         minPaths.add(paths.get(1));
         paths = minPaths;
 
-        return paths;
+        //return paths;
     }
 
     public Path initialPath(){
@@ -198,7 +177,7 @@ public class Algorithm {
         return null;
     }
 
-    public static int[][] convertArray(String arr[][]){
+    public int[][] convertArray(String arr[][]){
         int size = arr.length;
         int[][] aux = new int[size][size];
         for (int i = 0; i < size; i++) {
@@ -265,6 +244,41 @@ public class Algorithm {
             }
         }
     }
+
+    /*
+    public void runTest(){
+        //int[][] m = convertArray((getMatrixFromFile("ex5.txt")));
+        System.out.println("INITIAL PATHS");
+        paths.forEach(path-> System.out.println(path.toString()));
+        System.out.println();
+
+        setTop2Paths();
+        System.out.println("TOP 2");
+        paths.forEach(path-> System.out.println(path.toString()));
+        System.out.println();
+
+        int parent1[] = paths.get(0).getPath();
+        int parent2[] = paths.get(1).getPath();
+
+        int child1[] = new int[matrix.length];
+        int child2[] = new int[matrix.length];
+
+        pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
+        swap(child1);
+        swap(child2);
+        paths.add(new Base.Path(child1, matrix));
+        paths.add(new Base.Path(child2, matrix));
+
+        System.out.println("TOP 2 + CHILDREN");
+        paths.forEach(path-> System.out.println(path.toString()));
+        System.out.println();
+
+        setTop2Paths();
+        System.out.println("FINAL");
+        paths.forEach(path-> System.out.println(path.toString()));
+        System.out.println();
+
+    }*/
 
 
 }
