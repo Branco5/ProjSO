@@ -16,7 +16,7 @@ public class ThreadWait extends Thread {
             sleep(advanced.getDuration());
             Advanced.doWork=false;
             advanced.stopWorkers();
-            System.out.println("\nProgram ended");
+            System.out.println("\nProgram ended\n");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

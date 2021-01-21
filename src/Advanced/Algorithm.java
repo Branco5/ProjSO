@@ -11,14 +11,16 @@ public class Algorithm {
     private int popSize;
     private int bestDistance;
     private Path bestPath;
+    private int swapChance;
     private HashMap<Worker, Path> bestPathByWorker;
 
-    public Algorithm(String file, int popSize){
+    public Algorithm(String file, int popSize, int swapChance){
         rand = new Random();
         this.popSize = popSize;
         matrix = convertArray(getMatrixFromFile(file));
         bestDistance = 999999999;
         bestPathByWorker = new HashMap<>();
+        this.swapChance = swapChance;
     }
 
     public synchronized void runAlgorithm(List<Path> paths, Worker thread, Advanced advanced) throws InterruptedException {
@@ -30,8 +32,8 @@ public class Algorithm {
         int child2[] = new int[matrix.length];
 
         pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
-        swap(child1);
-        swap(child2);
+        swap(child1, swapChance);
+        swap(child2, swapChance);
         paths.add(new Path(child1, matrix));
         paths.add(new Path(child2, matrix));
         thread.updatePopSize();
@@ -121,9 +123,9 @@ public class Algorithm {
         return path;
     }
 
-    int[] swap(int[] path){
+    int[] swap(int[] path, int percentage){
         int size = path.length;
-        if(rollDice()){
+        if(rollDice(percentage)){
             int a = rand.nextInt(size) % size;
             int b = rand.nextInt(size) % size;
             int tmp = path[a];
@@ -133,12 +135,9 @@ public class Algorithm {
         return path;
     }
 
-    /**
-     * Método auxiliar a swap com 5% de chance de retornar true
-     * @return
-     */
-    private boolean rollDice(){
-        return rand.nextInt(100) < 5;
+    private boolean rollDice(int percentage){
+
+        return rand.nextInt(100) < percentage;
     }
 
     public static String[][] getMatrixFromFile(String filename) {

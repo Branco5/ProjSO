@@ -8,16 +8,10 @@ import java.util.List;
 public class ThreadMerge extends Thread {
     private Advanced advanced;
     private long period;
-    private boolean ceased;
 
     public ThreadMerge(Advanced advanced){
         this.period = (long)advanced.getPeriod();
         this.advanced = advanced;
-        this.ceased=false;
-    }
-
-    public void cease(){
-        this.ceased = true;
     }
 
     @Override
@@ -27,8 +21,8 @@ public class ThreadMerge extends Thread {
             try {
                 sleep(period);
                 Advanced.doWork=false;
-                sleep(300);
-                System.out.println("MERGING POPULATIONS|RATE="+period);
+                sleep(200);
+                System.out.println("\nMERGING POPULATIONS\n");
                 List<Path> merged = new ArrayList<>();
                 for(Worker w : advanced.getWorkers()){
                     merged.addAll(w.getPaths());
