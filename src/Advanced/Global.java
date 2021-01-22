@@ -2,23 +2,30 @@ package Advanced;
 
 import java.util.Scanner;
 
-public class Advanced {
+public class Global {
     private Worker[] workers;
     private Algorithm aj;
     private long startTime;
     private double mergeRate;
     private long duration;
+    private Path bestPath;
+    private long bestTime;
+    private Worker bestWorker;
+    private int bestDistance;
     static boolean doWork = true; //When false merge populations
 
-    public Advanced(String file, int nrWorkers, int duration, int population, int swapChance, double mergeRate){
+    public Global(String file, int nrWorkers, int duration, int population, int swapChance, double mergeRate){
         this.workers = new Worker[nrWorkers];
         this.aj = new Algorithm(file, population, swapChance);
         this.mergeRate = mergeRate;
         this.duration = duration*1000;
-        //this.startTime = System.currentTimeMillis();
+        bestPath=null;
+        bestDistance=999999999;
+        bestTime=999999999;
+        bestWorker = null;
 
         for (int i = 0; i<workers.length; i++) {
-            String name = "thread-"+i;
+            String name = "Thread-"+i;
             Worker thread = new Worker(this);
             thread.setName(name);
             workers[i] = thread;
@@ -30,7 +37,7 @@ public class Advanced {
     }
 
     public double getPeriod(){
-        return mergeRate *duration;
+        return mergeRate * duration;
     }
 
     public Algorithm getAlgorithm(){
@@ -52,38 +59,39 @@ public class Advanced {
         return startTime;
     }
 
-    synchronized void stopWorkers(){
+    public void stopWorkers() throws InterruptedException {
 
         System.out.println("\nSTOPPING WORKERS\n");
         for(int i = 0; i<workers.length; i++){
             workers[i].interrupt();
-            // workers[i].join();
         }
+        print();
+    }
 
-        for(int i = 0; i<workers.length; i++){
-            Path best = workers[i].getBestPath();
-            getAlgorithm().getBestPathByWorker().put(workers[i], best);
-            System.out.println("Best path found by "+workers[i].getName()+": "+ best + " in " + workers[i].getTime() + " milliseconds");
+    public void print(){
+        for(Worker w : workers){
+            Path best = w.getBestPath();
+            System.out.println("Best path found by "+w.getName()+": "+
+                    best + " in " + w.getTime() + " milliseconds and "+w.getIterationBest()+" iterations");
         }
-        //List<Path> bestPaths = new ArrayList<>(aj.getBestPathByWorker().values());
-        aj.setBestPath();
-        Worker best = getWorkerBestPath();
         System.out.println();
-        System.out.println("Best path found: " + aj.getBestPath() +" by "+best.getName()+" in "+best.getTime() + " milliseconds");
+        System.out.println("Best path found: " + getBestDistance() +
+                " by "+bestWorker.getName()+" in "+bestTime + " milliseconds and "+ bestWorker.getIterationBest()+" iterations");
+
     }
 
-    public Worker getWorkerBestPath(){
-        Worker worker = null;
-        int min = 999999999;
-        for (Worker w: workers) {
-            if(w.getBestPath().getDistance()<min){
-                worker = w;
-                min = w.getBestPath().getDistance();
-            }
+    public synchronized int getBestDistance(){
+        return this.bestDistance;
+    }
+
+    public synchronized void setBestPath(Worker thread){
+        if(thread.getBestDistance() <= getBestDistance() && thread.getTime()<bestTime){
+            bestWorker = thread;
+            bestPath = thread.getBestPath();
+            bestTime = thread.getTime();
+            bestDistance= thread.getBestDistance();
         }
-        return worker;
     }
-
 
 
     public static void main(String[] args) throws InterruptedException {
@@ -92,11 +100,16 @@ public class Advanced {
 
         System.out.println("Insert algorithm parameters in this order: " +
                 "file - threads - duration(seconds) - population - swap chance(%) - merge rate(decimal)");
-        System.out.println("Example: dantzig42.txt 5 10 80 5 0.3");
+        System.out.println("Example: att48.txt 5 10 80 5 0.3");
+        System.out.print("Write 'exit' to quit program\n> ");
 
-        while(running){
-            System.out.print("> ");
+
+        while(running) {
             String input = scanner.nextLine();
+            if (input.trim().toLowerCase().equalsIgnoreCase("exit")) {
+                running = false;
+                break;
+            }
             String arr[] = input.split("\\s");
             int nrWorkers = Integer.parseInt(arr[1]);
             int duration = Integer.parseInt(arr[2]);
@@ -104,16 +117,17 @@ public class Advanced {
             int swap = Integer.parseInt(arr[4]);
             double merge = Double.parseDouble(arr[5]);
 
-            Advanced adv = new Advanced(arr[0], nrWorkers, duration, population, swap, merge);
+            Global adv = new Global(arr[0], nrWorkers, duration, population, swap, merge);
 
             ThreadMerge tm = new ThreadMerge(adv);
-            ThreadWait tw = new ThreadWait(adv, tm);
+            ThreadWait tw = new ThreadWait(adv);
 
             adv.startWorkers();
             tw.start();
             tm.start();
-
         }
+
+      //  }
 
         /*Advanced adv = new Advanced(4, 0.3, "att48.txt", 50, 10000, 23);
         ThreadMerge tm = new ThreadMerge(adv);

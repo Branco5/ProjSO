@@ -6,41 +6,45 @@ import java.util.List;
 
 
 public class ThreadMerge extends Thread {
-    private Advanced advanced;
+    private Global global;
     private long period;
 
-    public ThreadMerge(Advanced advanced){
-        this.period = (long)advanced.getPeriod();
-        this.advanced = advanced;
+    public ThreadMerge(Global global){
+        this.period = (long) global.getPeriod();
+        this.global = global;
     }
 
     @Override
     public void run() {
-        long time = advanced.getStartTime()+advanced.getDuration()-period*2;
+        long time = global.getStartTime()+ global.getDuration()-period;
+        //System.out.println(period);
         while (System.currentTimeMillis() <= time) {
             try {
                 sleep(period);
-                Advanced.doWork=false;
+                Global.doWork=false;
                 sleep(200);
                 System.out.println("\nMERGING POPULATIONS\n");
                 List<Path> merged = new ArrayList<>();
-                for(Worker w : advanced.getWorkers()){
+                for(Worker w : global.getWorkers()){
                     merged.addAll(w.getPaths());
                 }
                 merged.sort(Comparator.comparing(Path::getDistance));
 
-                for(Worker w : advanced.getWorkers()){
+                for(Worker w : global.getWorkers()){
                     int size = w.getPopSize();
                     List<Path> newList = new ArrayList<>(merged.subList(0,size));
                     w.setPaths(newList);
+                    //System.out.println(w.getName() + " - " + w.getPaths().size());
                 }
 
-                Advanced.doWork=true;
+                Global.doWork=true;
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         }
+        this.interrupt();
 
     }
 }

@@ -4,26 +4,40 @@ import java.util.List;
 
 public class Worker extends Thread {
 
-
-    //private Base.Algorithm aj;
     private List<Path> paths;
-    private Advanced advanced;
+    private Path bestPath;
+    private Global global;
     private long time;
     private int popSize;
+    private int iterationBest;
+    private int iterations;
 
-    Worker(Advanced advanced) {
-        this.advanced = advanced;
-        paths = advanced.getAlgorithm().initPaths();
+    Worker(Global global) {
+        this.global = global;
+        paths = global.getAlgorithm().initPaths();
+        bestPath = paths.get(0);
         time = 0;
         this.popSize= paths.size();
     }
 
-    public int getPopSize() {
-        return paths.size();
+    public int getIterationBest() {
+        return iterationBest;
     }
 
-    public void updatePopSize() {
-        this.popSize = paths.size();
+    public void setIterationBest(int iterationBest) {
+        this.iterationBest = iterationBest;
+    }
+
+    public int getIterations() {
+        return iterations;
+    }
+
+    public void incrementIterations() {
+        this.iterations++;
+    }
+
+    public int getPopSize() {
+        return paths.size();
     }
 
     public List<Path> getPaths() {
@@ -35,7 +49,7 @@ public class Worker extends Thread {
     }
 
     public Path getBestPath() {
-        return paths.get(0);
+        return bestPath;
     }
 
     public void setTime(long time) {
@@ -46,37 +60,26 @@ public class Worker extends Thread {
         return time;
     }
 
-    /*public void putBestPath(){
-        advanced.getAlgorithm().putWorkerPath(this);
-    }*/
-/*
-    public synchronized void inter(){
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(this.getName()+" ENDING");
-        Thread.currentThread().interrupt();
-        try {
-            this.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public int getBestDistance() {
+        return bestPath.getDistance();
     }
-*/
+
+    public void setBestPath(Path bestPath) {
+        this.bestPath = bestPath;
+    }
 
 
     @Override
     public void run() {
         while (!Thread.interrupted()) {
-            while(Advanced.doWork){
+            while(Global.doWork){
                 try {
-                    advanced.getAlgorithm().runAlgorithm(paths, this, advanced);
+                    global.getAlgorithm().runAlgorithm(this, global);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }
+        global.setBestPath(this);
     }
 }

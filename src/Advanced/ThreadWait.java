@@ -2,21 +2,19 @@ package Advanced;
 
 
 public class ThreadWait extends Thread {
-    private Advanced advanced;
-   // private ThreadMerge merge;
+    private Global global;
 
-    public ThreadWait(Advanced advanced, ThreadMerge merge) {
-        this.advanced = advanced;
-        //this.merge = merge;
+    public ThreadWait(Global global) {
+        this.global = global;
     }
 
     @Override
     public void run(){
         try {
-            sleep(advanced.getDuration());
-            Advanced.doWork=false;
-            advanced.stopWorkers();
-            System.out.println("\nProgram ended\n");
+            sleep(global.getDuration());
+            Global.doWork=false;
+            global.stopWorkers();
+            System.out.print("\nAlgorithm finished\n\n> ");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -9,67 +9,45 @@ public class Algorithm {
     private Random rand;
     private int[][] matrix;
     private int popSize;
-    private int bestDistance;
-    private Path bestPath;
     private int swapChance;
-    private HashMap<Worker, Path> bestPathByWorker;
+
 
     public Algorithm(String file, int popSize, int swapChance){
         rand = new Random();
         this.popSize = popSize;
         matrix = convertArray(getMatrixFromFile(file));
-        bestDistance = 999999999;
-        bestPathByWorker = new HashMap<>();
         this.swapChance = swapChance;
     }
 
-    public synchronized void runAlgorithm(List<Path> paths, Worker thread, Advanced advanced) throws InterruptedException {
+    public void runAlgorithm(Worker thread, Global global) throws InterruptedException {
 
-        int parent1[] = paths.get(0).getPath();
-        int parent2[] = paths.get(1).getPath();
+        List<Path> threadPaths = thread.getPaths();
+
+        int parent1[] = thread.getPaths().get(0).getPath();
+        int parent2[] = thread.getPaths().get(1).getPath();
 
         int child1[] = new int[matrix.length];
         int child2[] = new int[matrix.length];
 
         pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
-        swap(child1, swapChance);
-        swap(child2, swapChance);
-        paths.add(new Path(child1, matrix));
-        paths.add(new Path(child2, matrix));
-        thread.updatePopSize();
+        //boolean s1 = swap(child1, swapChance);
+        //boolean s2 = swap(child2, swapChance);
+        thread.getPaths().add(new Path(child1, matrix));
+        thread.getPaths().add(new Path(child2, matrix));
+        removeWorstPaths(thread.getPaths());
+        thread.incrementIterations();
 
-        setTop2Paths(paths);
-        thread.updatePopSize();
-        if(paths.get(0).getDistance() < bestDistance) {
-            thread.setTime(System.currentTimeMillis() - advanced.getStartTime());
-            bestDistance = paths.get(0).getDistance();
-            System.out.println("Best path: " + bestDistance + " found in " + thread.getTime() + " milliseconds");
+        if(threadPaths.get(0).getDistance()<thread.getBestDistance()){
+            thread.setTime(System.currentTimeMillis() - global.getStartTime());
+            thread.setIterationBest(thread.getIterations());
+            thread.setBestPath(threadPaths.get(0));
+            System.out.println("Best path: " + thread.getBestDistance() +
+                    " found in " + thread.getTime() + " milliseconds" + " by "+thread.getName());
+           // System.out.println("Swap: " +s1+s2);
+            //thread.sleep(1000);
         }
 
-   /*     if(paths.get(0).getDistance() < bestDistance) {
-            thread.setTime(System.currentTimeMillis() - advanced.getStartTime());
-            setBestPathByWorker(paths, thread);
-            System.out.println("Best path: " + paths.get(0) + " found by " + thread.getName() + " in " + thread.getTime() + " milliseconds");
-        }*/
     }
-    synchronized void setBestPath() {
-        List<Path> bestPaths = new ArrayList<>(getBestPathByWorker().values());
-        setTop2Paths(bestPaths);
-        this.bestPath = bestPaths.get(0);
-    }
-
-    public Path getBestPath(){
-        return bestPath;
-    }
-
-    public void putWorkerPath(Worker w){
-        bestPathByWorker.put(w, w.getBestPath());
-    }
-
-    public HashMap<Worker, Path> getBestPathByWorker(){
-        return bestPathByWorker;
-    }
-
 
     public List<Path> initPaths(){
 
@@ -82,23 +60,22 @@ public class Algorithm {
             ps.add(i,path);
         }
 
-        setTop2Paths(ps);
+        sortPaths(ps);
 
         return ps;
     }
 
-    public static void setTop2Paths(List<Path> paths){
-
-        //paths.forEach(path-> System.out.println(path.toString()));
-
-        List<Path> minPaths = new ArrayList<>();
+    public static void sortPaths(List<Path> paths){
 
         paths.sort(Comparator.comparing(Path::getDistance));
-        minPaths.add(paths.get(0));
-        minPaths.add(paths.get(1));
-        paths = minPaths;
 
-        //return paths;
+    }
+
+    public void removeWorstPaths(List<Path> paths){
+        sortPaths(paths);
+        int size = paths.size();
+        paths.remove(size-1);
+        paths.remove(size-2);
     }
 
     public Path initialPath(){
@@ -123,20 +100,21 @@ public class Algorithm {
         return path;
     }
 
-    int[] swap(int[] path, int percentage){
+    public boolean swap(int[] path, int percentage){
         int size = path.length;
-        if(rollDice(percentage)){
+        boolean roll = rollDice(percentage);
+        if(roll){
             int a = rand.nextInt(size) % size;
             int b = rand.nextInt(size) % size;
             int tmp = path[a];
             path[a]=path[b];
             path[b]=tmp;
         }
-        return path;
+        return roll;
+        //return path;
     }
 
     private boolean rollDice(int percentage){
-
         return rand.nextInt(100) < percentage;
     }
 
@@ -155,16 +133,12 @@ public class Algorithm {
                 String[] values = line.split("\\s+");
                 //String[] arr = arraycopy(values)
                 List<String> list = new ArrayList<>(Arrays.asList(values));
-                //System.out.println(list.toString());
-                //int[] array = Arrays.stream(values).mapToInt(Integer::parseInt).toArray();
                 if(list.get(0).equals("")){
                     for(int i=0;i< values.length-1;i++){
                         list.set(i, list.get(i+1));
                     }
                     list.remove(size-1);
                 }
-               // System.out.println(list.toString());
-                //System.out.println(list.toString());
                 matrix[count] = list.toArray(new String[0]);
                 count++;
             }
@@ -243,42 +217,5 @@ public class Algorithm {
             }
         }
     }
-
-    /*
-    public void runTest(){
-        //int[][] m = convertArray((getMatrixFromFile("ex5.txt")));
-        System.out.println("INITIAL PATHS");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-        setTop2Paths();
-        System.out.println("TOP 2");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-        int parent1[] = paths.get(0).getPath();
-        int parent2[] = paths.get(1).getPath();
-
-        int child1[] = new int[matrix.length];
-        int child2[] = new int[matrix.length];
-
-        pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
-        swap(child1);
-        swap(child2);
-        paths.add(new Base.Path(child1, matrix));
-        paths.add(new Base.Path(child2, matrix));
-
-        System.out.println("TOP 2 + CHILDREN");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-        setTop2Paths();
-        System.out.println("FINAL");
-        paths.forEach(path-> System.out.println(path.toString()));
-        System.out.println();
-
-    }*/
-
-
 }
 
