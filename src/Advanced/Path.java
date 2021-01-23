@@ -2,6 +2,9 @@ package Advanced;
 
 import java.util.Arrays;
 
+/**
+ * Defines attributes and methods of individual paths
+ */
 public class Path {
     private int[] path;
     private int distance;
@@ -45,8 +48,7 @@ public class Path {
 
     @Override
     public String toString() {
-        return "Path{" +
-                "path=" + Arrays.toString(path) +
+        return "Path{" + Arrays.toString(path) +
                 ", distance=" + distance +
                 '}';
     }

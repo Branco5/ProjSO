@@ -8,13 +8,16 @@ public class ThreadWait extends Thread {
         this.global = global;
     }
 
+    /**
+     * Sleeps for duration desired then stops program execution
+     */
     @Override
     public void run(){
         try {
             sleep(global.getDuration());
             Global.doWork=false;
             global.stopWorkers();
-            System.out.print("\nAlgorithm finished\n\n> ");
+            System.out.print("\nAlgorithm finished\n");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -14,9 +14,14 @@ public class ThreadMerge extends Thread {
         this.global = global;
     }
 
+    /**
+     * Merges best paths of all threads and assigns to each thread in each iteration of desired period
+     * Does not execute the last iteration
+     * If rate >= 0.5, does not execute
+     */
     @Override
     public void run() {
-        long time = global.getStartTime()+ global.getDuration()-period;
+        long time = global.getStartTime()+ global.getDuration()-period*2;
         //System.out.println(period);
         while (System.currentTimeMillis() <= time) {
             try {
@@ -42,9 +47,7 @@ public class ThreadMerge extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
-        this.interrupt();
 
     }
 }

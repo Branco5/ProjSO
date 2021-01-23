@@ -2,14 +2,16 @@ package Advanced;
 
 import java.util.List;
 
+/**
+ * Class defining each thread that will be working independently from each other
+ */
 public class Worker extends Thread {
 
     private List<Path> paths;
     private Path bestPath;
-    private Global global;
-    private long time;
-    private int popSize;
-    private int iterationBest;
+    private final Global global;
+    private long time; //time of best path found
+    private int iterationBest; //iteration where best path found
     private int iterations;
 
     Worker(Global global) {
@@ -17,7 +19,21 @@ public class Worker extends Thread {
         paths = global.getAlgorithm().initPaths();
         bestPath = paths.get(0);
         time = 0;
-        this.popSize= paths.size();
+    }
+
+    @Override
+    public void run() {
+        while (!Thread.interrupted()) {
+            while(Global.doWork){
+                try {
+                    global.getAlgorithm().runAlgorithm(this, global);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        //update central path if this thread's path beats it
+        global.setBestPath(this);
     }
 
     public int getIterationBest() {
@@ -40,9 +56,7 @@ public class Worker extends Thread {
         return paths.size();
     }
 
-    public List<Path> getPaths() {
-        return paths;
-    }
+    public List<Path> getPaths() {return paths;}
 
     public void setPaths(List<Path> paths) {
         this.paths = paths;
@@ -68,18 +82,4 @@ public class Worker extends Thread {
         this.bestPath = bestPath;
     }
 
-
-    @Override
-    public void run() {
-        while (!Thread.interrupted()) {
-            while(Global.doWork){
-                try {
-                    global.getAlgorithm().runAlgorithm(this, global);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        global.setBestPath(this);
-    }
 }

@@ -5,11 +5,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Define métodos e atributos do algoritmo a correr por cada thread
+ */
 public class Algorithm {
-    private Random rand;
-    private int[][] matrix;
-    private int popSize;
-    private int swapChance;
+    private final Random rand;
+    private final int[][] matrix;
+    private final int popSize;
+    private final int swapChance;
 
 
     public Algorithm(String file, int popSize, int swapChance){
@@ -19,7 +22,11 @@ public class Algorithm {
         this.swapChance = swapChance;
     }
 
-    public void runAlgorithm(Worker thread, Global global) throws InterruptedException {
+    /**
+     * Algoritmo a executar por cada thread
+     * Remover print para ver apenas resultados finais
+     */
+    public void runAlgorithm(Worker thread, Global global) throws Exception {
 
         List<Path> threadPaths = thread.getPaths();
 
@@ -30,8 +37,8 @@ public class Algorithm {
         int child2[] = new int[matrix.length];
 
         pmxCrossover(parent1, parent2, child1, child2, matrix.length, rand);
-        //boolean s1 = swap(child1, swapChance);
-        //boolean s2 = swap(child2, swapChance);
+        swap(child1, swapChance);
+        swap(child2, swapChance);
         thread.getPaths().add(new Path(child1, matrix));
         thread.getPaths().add(new Path(child2, matrix));
         removeWorstPaths(thread.getPaths());
@@ -41,10 +48,10 @@ public class Algorithm {
             thread.setTime(System.currentTimeMillis() - global.getStartTime());
             thread.setIterationBest(thread.getIterations());
             thread.setBestPath(threadPaths.get(0));
+
+            //Remover para ver apenas resultados finais
             System.out.println("Best path: " + thread.getBestDistance() +
                     " found in " + thread.getTime() + " milliseconds" + " by "+thread.getName());
-           // System.out.println("Swap: " +s1+s2);
-            //thread.sleep(1000);
         }
 
     }
@@ -65,10 +72,11 @@ public class Algorithm {
         return ps;
     }
 
+    /**
+     * Sorts paths from best to worst according to distance
+     */
     public static void sortPaths(List<Path> paths){
-
         paths.sort(Comparator.comparing(Path::getDistance));
-
     }
 
     public void removeWorstPaths(List<Path> paths){
@@ -95,29 +103,35 @@ public class Algorithm {
             int tmp = path.getPath()[i];
             path.getPath()[i]=path.getPath()[a];
             path.getPath()[a]=tmp;
-
         }
         return path;
     }
 
-    public boolean swap(int[] path, int percentage){
+    /**
+     * Swaps 2 random elements of a path according to swap chance desired
+     */
+    public void swap(int[] path, int percentage) throws Exception {
         int size = path.length;
-        boolean roll = rollDice(percentage);
-        if(roll){
+        if(rollDice(percentage)){
             int a = rand.nextInt(size) % size;
             int b = rand.nextInt(size) % size;
             int tmp = path[a];
             path[a]=path[b];
             path[b]=tmp;
         }
-        return roll;
-        //return path;
     }
 
-    private boolean rollDice(int percentage){
+    /**
+     * Returns true if random number generated is below percentage in parameter
+     * Auxiliary to swap method
+     */
+    private boolean rollDice(int percentage) throws Exception {
         return rand.nextInt(100) < percentage;
     }
 
+    /**
+     * Generates matrix from file
+     */
     public static String[][] getMatrixFromFile(String filename) {
         String name = "tsp_testes/" + filename;
         try (BufferedReader br = new BufferedReader(new FileReader(name))) {
@@ -129,9 +143,7 @@ public class Algorithm {
             int count = 0;
             while (count<size) {
                 line = br.readLine();
-                //line = line.replace(" ", "xxx");
                 String[] values = line.split("\\s+");
-                //String[] arr = arraycopy(values)
                 List<String> list = new ArrayList<>(Arrays.asList(values));
                 if(list.get(0).equals("")){
                     for(int i=0;i< values.length-1;i++){
@@ -150,6 +162,9 @@ public class Algorithm {
         return null;
     }
 
+    /**
+     * Converts String array to int array
+     */
     public int[][] convertArray(String arr[][]){
         int size = arr.length;
         int[][] aux = new int[size][size];
@@ -168,12 +183,8 @@ public class Algorithm {
         int i, n1, m1, n2, m2;
         int swap;
 
-
         int cuttingPoint1 = rand.nextInt(n);
         int cuttingPoint2 = rand.nextInt(n);
-
-        //int cuttingPoint1 = 3;
-        //int cuttingPoint2 = 5;
 
         while (cuttingPoint1 == cuttingPoint2) {
             cuttingPoint2 = rand.nextInt(n);
@@ -196,8 +207,6 @@ public class Algorithm {
             replacement2[parent1[i]] = parent2[i];
         }
 
-
-        // fill in remaining slots with replacements
         for (i = 0; i < n; i++) {
             if ((i < cuttingPoint1) || (i > cuttingPoint2)) {
                 n1 = parent1[i];

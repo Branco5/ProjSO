@@ -56,7 +56,7 @@ public class Base {
         aj.setBestPath();
         Worker best = getWorkerBestPath();
         System.out.println();
-        System.out.println("Best path found: " + aj.getBestPath() +" by "+best.getName()+" in "+best.getTime() + " milliseconds");
+        System.out.println("Best path found: " + aj.getBestPath().getDistance() +" by "+best.getName()+" in "+best.getTime() + " milliseconds");
     }
 
     public Worker getWorkerBestPath(){
@@ -79,13 +79,5 @@ public class Base {
         ThreadWait tw = new ThreadWait(5000, base);
         tw.start();
         base.startWorkers();
-/*
-        long t= System.currentTimeMillis();
-        long end = t+3000;
-        while(System.currentTimeMillis() < end) {
-
-        }*/
-
-
     }
 }
