@@ -17,7 +17,7 @@ public class ThreadMerge extends Thread {
     /**
      * Merges best paths of all threads and assigns to each thread in each iteration of desired period
      * Does not execute the last iteration
-     * If rate > 0.5, does not execute
+     * If rate >= 0.5, does not execute
      */
     @Override
     public void run() {
@@ -43,8 +43,9 @@ public class ThreadMerge extends Thread {
                     //System.out.println(w.getName() + " - " + w.getPaths().size());
                 }
 
-                Global.doWork=true;
                 System.out.println("RESUMING WORK\n");
+                Global.doWork=true;
+
 
             } catch (InterruptedException e) {
                 e.printStackTrace();

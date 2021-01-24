@@ -8,7 +8,7 @@ public class Global {
     private final Worker[] workers;
     private final Algorithm aj;
     private long startTime;
-    private final double mergeRate; // must be <= 0.5 as the last merge is never executed
+    private final double mergeRate; // must be < 0.5 as the last merge is never executed
     private final long duration;
     private Path bestPath;
     private long bestTime;
@@ -44,11 +44,14 @@ public class Global {
     /**
      * Stops workers and prints best results
      */
-    public void stopWorkers(){
+    public void stopWorkers() throws InterruptedException {
 
         System.out.println("\nSTOPPING WORKERS\n");
         for(int i = 0; i<workers.length; i++){
             workers[i].interrupt();
+        }
+        for(int i = 0; i<workers.length; i++){
+            workers[i].join();
         }
         print();
     }
@@ -67,16 +70,18 @@ public class Global {
     public synchronized int getBestDistance(){
         return this.bestDistance;
     }
-
+    public synchronized long getBestTime(){
+        return this.bestTime;
+    }
     /**
      * Updates central data with the data of the thread with the best path
      */
     public synchronized void setBestPath(Worker thread){
-        if(thread.getBestDistance() <= getBestDistance() && thread.getTime()<bestTime){
-            bestWorker = thread;
-            bestPath = thread.getBestPath();
-            bestTime = thread.getTime();
-            bestDistance= thread.getBestDistance();
+        if(thread.getBestDistance() < getBestDistance() || (thread.getBestDistance() == getBestDistance() && thread.getTime()<getBestTime())){
+                bestWorker = thread;
+                bestPath = thread.getBestPath();
+                bestTime = thread.getTime();
+                bestDistance= thread.getBestDistance();
         }
     }
 

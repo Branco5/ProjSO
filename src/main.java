@@ -13,6 +13,7 @@ public class main {
         System.out.println("Insert 'tsp2' and algorithm parameters in this order: " +
                 "file - threads - duration(seconds) - population - swap chance(%) - merge rate(decimal)");
         System.out.print("Example: tsp2 dantzig42.txt 5 10 80 5 0.3\n> ");
+        
         String command = scanner.nextLine().toLowerCase();
         arr = command.trim().split("\\s");
 
@@ -25,9 +26,11 @@ public class main {
         Global adv = new Global(arr[1], nrWorkers, duration, population, swap, merge);
         ThreadMerge tm = new ThreadMerge(adv);
         ThreadWait tw = new ThreadWait(adv);
+
         adv.startWorkers();
         tw.start();
         tm.start();
+
     }
 }
 
