@@ -24,7 +24,7 @@ public class Algorithm {
 
     /**
      * Algoritmo a executar por cada thread
-     * Remover print para ver apenas resultados finais
+     * Remover print final para ver apenas resultados finais
      */
     public void runAlgorithm(Worker thread, Global global) throws Exception {
 
@@ -174,6 +174,10 @@ public class Algorithm {
             }
         }
         return aux;
+    }
+
+    public int getPopSize() {
+        return popSize;
     }
 
     static void pmxCrossover(int parent1[],int parent2[],

@@ -17,7 +17,7 @@ public class ThreadMerge extends Thread {
     /**
      * Merges best paths of all threads and assigns to each thread in each iteration of desired period
      * Does not execute the last iteration
-     * If rate >= 0.5, does not execute
+     * If rate > 0.5, does not execute
      */
     @Override
     public void run() {
@@ -27,22 +27,24 @@ public class ThreadMerge extends Thread {
             try {
                 sleep(period);
                 Global.doWork=false;
-                sleep(200);
-                System.out.println("\nMERGING POPULATIONS\n");
+                sleep(100);
+                System.out.println("\nMERGING POPULATIONS");
                 List<Path> merged = new ArrayList<>();
                 for(Worker w : global.getWorkers()){
                     merged.addAll(w.getPaths());
                 }
                 merged.sort(Comparator.comparing(Path::getDistance));
 
+                int size = global.getAlgorithm().getPopSize();
+
                 for(Worker w : global.getWorkers()){
-                    int size = w.getPopSize();
                     List<Path> newList = new ArrayList<>(merged.subList(0,size));
                     w.setPaths(newList);
                     //System.out.println(w.getName() + " - " + w.getPaths().size());
                 }
 
                 Global.doWork=true;
+                System.out.println("RESUMING WORK\n");
 
             } catch (InterruptedException e) {
                 e.printStackTrace();

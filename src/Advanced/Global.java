@@ -2,13 +2,13 @@ package Advanced;
 
 
 /**
- * Functions as central memory
+ * Functions as central memory and thread coordinator
  */
 public class Global {
     private final Worker[] workers;
     private final Algorithm aj;
     private long startTime;
-    private final double mergeRate; // must be < 0.5 as the last merge is never executed
+    private final double mergeRate; // must be <= 0.5 as the last merge is never executed
     private final long duration;
     private Path bestPath;
     private long bestTime;
@@ -19,7 +19,7 @@ public class Global {
     public Global(String file, int nrWorkers, int duration, int population, int swapChance, double mergeRate){
         this.workers = new Worker[nrWorkers];
         this.aj = new Algorithm(file, population, swapChance);
-        this.mergeRate = mergeRate;
+        this.mergeRate = mergeRate > 0 ? mergeRate : 1;
         this.duration = duration*1000;
         bestPath=null;
         bestDistance=999999999;
